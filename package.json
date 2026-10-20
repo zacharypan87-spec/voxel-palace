@@ -1,0 +1,14 @@
+{
+  "name": "voxel-palace",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "九重宫阙 · Voxel Palace —— Three.js 体素中国古典宫苑建筑群",
+  "scripts": {
+    "start": "node server.mjs",
+    "shot": "node tools/shot.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>九重宫阙 · Voxel Palace</title>
+<meta name="description" content="用体素方块营造的中国古典宫苑建筑群 — Three.js 实时渲染，主次分明，可环绕漫游。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23130f0a'/%3E%3Crect x='14' y='14' width='36' height='36' fill='none' stroke='%23d9b56e' stroke-width='3'/%3E%3Ctext x='32' y='43' font-size='28' text-anchor='middle' fill='%23e7c684' font-family='KaiTi,serif'%3E宫%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="scene" aria-label="体素中国古典宫苑三维场景"></canvas>
+
+  <div class="sky-fallback" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="hud-head">
+    <div class="brand">
+      <div class="seal" aria-hidden="true"><span>阙</span></div>
+      <div class="brand-text">
+        <p class="eyebrow">VOXEL PALACE · 2026</p>
+        <h1>九重宫阙</h1>
+        <p class="sub">紫禁风物 · 体素营造</p>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <button class="hud-btn" id="btnRotate" type="button" title="自动巡游">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>巡游</span>
+      </button>
+      <button class="hud-btn" id="btnNight" type="button" title="切换昼夜">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>月夜</span>
+      </button>
+      <button class="hud-btn" id="btnReset" type="button" title="视角复位">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 15v5h-5M4 4l6 6M20 20l-6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>复位</span>
+      </button>
+    </div>
+  </header>
+
+  <aside class="info-card" id="infoCard">
+    <div class="info-top">
+      <span class="rank" id="infoRank">总览</span>
+      <span class="coord" id="infoCoord">N 39°54′ · E 116°23′</span>
+    </div>
+    <h2 id="infoTitle">九重宫阙</h2>
+    <p class="info-meta" id="infoMeta">中轴对称 · 前朝后寝 · 主次分明</p>
+    <p class="info-desc" id="infoDesc">九座体素殿宇依中轴铺展：金瓦重檐的太和殿居于三台之上，东西配殿、钟鼓楼与午门层层拱卫，御花园双亭收束于轴线末端。</p>
+    <div class="info-foot">
+      <span class="dot"></span>
+      <span id="infoHint">点击建筑或下方标签，可聚焦巡览</span>
+    </div>
+  </aside>
+
+  <nav class="dock" id="dock" aria-label="建筑导航">
+    <button type="button" class="dock-btn is-active" data-target="overview"><i>00</i><span>总览</span></button>
+    <button type="button" class="dock-btn" data-target="main"><i>01</i><span>太和殿</span></button>
+    <button type="button" class="dock-btn" data-target="rear"><i>02</i><span>乾清宫</span></button>
+    <button type="button" class="dock-btn" data-target="gate"><i>03</i><span>午门</span></button>
+    <button type="button" class="dock-btn" data-target="halls"><i>04</i><span>东西配殿</span></button>
+    <button type="button" class="dock-btn" data-target="towers"><i>05</i><span>钟鼓楼</span></button>
+    <button type="button" class="dock-btn" data-target="garden"><i>06</i><span>御花园</span></button>
+  </nav>
+
+  <footer class="hint">
+    <span class="hint-line"></span>
+    <span>左键旋转</span>
+    <span class="hint-sep">·</span>
+    <span>滚轮缩放</span>
+    <span class="hint-sep">·</span>
+    <span>右键平移</span>
+    <span class="hint-sep">·</span>
+    <span>点击建筑聚焦</span>
+    <span class="hint-line"></span>
+  </footer>
+
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <div class="loader-seal">宫</div>
+      <p class="loader-title">九重宫阙</p>
+      <p class="loader-sub">正在营造体素宫苑</p>
+      <div class="loader-bar"><i id="loaderBar"></i></div>
+      <p class="loader-count" id="loaderCount">勘景 · 制砖 · 起脊</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script src="./vendor/three.min.js"></script>
+<script src="./src/voxel.js"></script>
+<script src="./src/palace.js"></script>
+<script src="./src/props.js"></script>
+<script src="./src/main.js"></script>
+</body>
+</html>
